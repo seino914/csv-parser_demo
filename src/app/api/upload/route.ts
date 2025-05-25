@@ -11,16 +11,28 @@ interface UploadResponse {
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 
-async function parseCSV(buffer: Buffer): Promise<CSVRow[]> {
-  return new Promise((resolve, reject) => {
-    const results: CSVRow[] = [];
-    Readable.from(buffer)
-      .pipe(csv())
-      .on("data", (data) => results.push(data))
-      .on("end", () => resolve(results))
-      .on("error", (error) => reject(error));
-  });
-}
+const parseCSV = async (buffer: Buffer): Promise<CSVRow[]> => {
+  const results: CSVRow[] = [];
+
+  try {
+    await new Promise<void>((resolve, reject) => {
+      Readable.from(buffer)
+        .pipe(
+          csv({
+            mapHeaders: ({ header }) => header.trim(),
+          })
+        )
+        .on("data", (data) => results.push(data))
+        .on("end", () => resolve())
+        .on("error", (error) => reject(error));
+    });
+
+    return results;
+  } catch (error) {
+    console.error("CSV parsing error:", error);
+    throw error;
+  }
+};
 
 // POST /api/upload
 export async function POST(
