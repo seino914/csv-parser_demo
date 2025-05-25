@@ -2,19 +2,31 @@
 
 import { useState } from "react";
 
+type CSVRow = Record<string, string>;
+
+interface CSVResponse {
+  rows: CSVRow[];
+  error?: string;
+}
+
 export default function Home() {
-  const [csvData, setCsvData] = useState<any[]>([]);
+  const [csvData, setCsvData] = useState<CSVRow[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleUpload = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const form = e.currentTarget;
     const fileInput = form.elements.namedItem("file") as HTMLInputElement;
 
-    if (!fileInput?.files?.[0]) return;
+    if (!fileInput?.files?.[0]) {
+      setError("ファイルを選択してください");
+      return;
+    }
 
     try {
       setIsLoading(true);
+      setError(null);
       const formData = new FormData();
       formData.append("file", fileInput.files[0]);
 
@@ -23,15 +35,15 @@ export default function Home() {
         body: formData,
       });
 
-      const data = await res.json();
+      const data = (await res.json()) as CSVResponse;
       if (data.error) {
-        alert(data.error);
+        setError(data.error);
         return;
       }
       setCsvData(data.rows);
       form.reset();
-    } catch (error) {
-      alert("エラーが発生しました");
+    } catch {
+      setError("エラーが発生しました");
     } finally {
       setIsLoading(false);
     }
@@ -70,6 +82,11 @@ export default function Home() {
                 CSVファイルをアップロードしてください
               </p>
             </div>
+            {error && (
+              <div className="text-sm text-red-600 bg-red-50 p-3 rounded">
+                {error}
+              </div>
+            )}
             <div>
               <button
                 type="submit"
@@ -114,7 +131,7 @@ export default function Home() {
                           key={j}
                           className="px-6 py-4 whitespace-nowrap text-sm text-gray-900"
                         >
-                          {value as string}
+                          {value}
                         </td>
                       ))}
                     </tr>
