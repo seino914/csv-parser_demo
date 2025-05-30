@@ -4,7 +4,7 @@ Next.js で`csv-parser`ライブラリを使用した CSV ファイル解析の�
 
 以下記事のサンプルアプリケーションとして作成しております。
 
-[Zenn の記事](https://zenn.dev/iroiro/)
+[Zenn の記事](https://zenn.dev/marvel/articles/f8f9bb84b0f2b8)
 
 ## 機能
 
